@@ -96,7 +96,7 @@ void setup(void) {
     return;
   }
 
-  tft.begin(identifier / 1);
+  tft.begin(identifier);
 
 
   Serial.println(F("Benchmark                Time (microseconds)"));
