@@ -19,3 +19,5 @@ To download. click the DOWNLOADS button in the top right corner, rename the unco
 Place the Adafruit_TFT library folder your <arduinosketchfolder>/libraries/ folder. You may need to create the libraries subfolder if its your first library. Restart the IDE
 
 Also requires the Adafruit_GFX library for Arduino. https://github.com/adafruit/Adafruit-GFX-Library
+
+To enable 3.5" LCD shield support from china uncomment line #define USE_35_ILI9481_SHIELD in header file.
