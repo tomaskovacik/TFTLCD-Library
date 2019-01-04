@@ -1,4 +1,4 @@
-#ifndef _pin_magic_
+#ifndef _pin_magic
 #define _pin_magic_
 
 // This header file serves two purposes:
@@ -38,12 +38,14 @@
 // Mega port/pin:  PH4  PH3  PB7  PG5  PB5  PB4  PH6  PH5
 // Leo port/pin :  PE6  PD7  PC7  PD4  PB7  PB6  PB5  PB4
 // Due port/pin : PC23 PC24 PB27 PC26  PD7 PC29 PC21 PC22
+
 // Breakout pin usage:
 // LCD Data Bit :   7   6   5   4   3   2   1   0
 // Uno dig. pin :   7   6   5   4   3   2   9   8
 // Uno port/pin : PD7 PD6 PD5 PD4 PD3 PD2 PB1 PB0
 // Mega dig. pin:  29  28  27  26  25  24  23  22
 // Mega port/pin: PA7 PA6 PA5 PA4 PA3 PA2 PA1 PA0 (one contiguous PORT)
+
 // Leo dig. pin :   7   6   5   4   3   2   9   8
 // Leo port/pin : PE6 PD7 PC6 PD4 PD0 PD1 PB5 PB4
 // Due dig. pin :  40  39  38  37  36  35  34  33
@@ -160,6 +162,46 @@
   #define setReadDirInline()  {                                   \
     DDRH &= ~B01111000; DDRB &= ~B10110000; DDRG &= ~B00100000; }
 
+ #elif defined(USE_35_ILI9481_SHIELD)
+
+  #define RD_PORT PORTF
+  #define WR_PORT PORTF
+  #define CD_PORT PORTF
+  #define CS_PORT PORTF
+  #define RD_MASK B00000001
+  #define WR_MASK B00000010
+  #define CD_MASK B00000100
+  #define CS_MASK B00001000
+/*
+  #define write8inline(d) {                                              \
+    PORTH = (PORTH&B10000111)|(((d)&B11000000)>>3)|(((d)&B00000011)<<5); \
+    PORTE = (PORTE&B11000111)|(((d)&B00001100)<<2)|(((d)&B00100000)>>2);                      \
+    PORTG = (PORTG&B11011111)|(((d)&B00010000)<<1);                      \
+    DELAY7;WR_STROBE; }
+  #define read8inline(result) {                                      \
+    RD_ACTIVE;                                                       \
+    DELAY7;                                                          \
+    result = ((PINH & B00011000) << 3) | ((PINE & B00001000) << 2) | ((PING & B00100000) >> 1) | \
+             ((PINE & B00110000) >> 2) | ((PINH & B01100000) >> 5);  \
+    RD_IDLE; }
+  #define setWriteDirInline() {                                  \
+    DDRH |=  B01111000; DDRE |=  B00111000; DDRG |=  B00100000; }
+  #define setReadDirInline()  {                                   \
+    DDRH &= ~B01111000; DDRE &= ~B00111000; DDRG &= ~B00100000; }
+*/
+
+  #define write8inline(d) {						\
+    PORTH &= ~(B01111000);\
+    PORTH |= ((d & B11000000) >> 3) | ((d & B00000011) << 5);\
+    PORTE &= ~(B00111000);\
+    PORTE |= ((d & B00001100) << 2) | ((d & B00100000) >> 2);\
+    PORTG &= ~(B00100000);\
+    PORTG |= (d & B00010000) << 1;\
+    DELAY7;WR_STROBE; }
+  #define read8inline(result) { RD_ACTIVE; DELAY7; result = (PINH & 0x60) >> 5;result |= (PINH & 0x18) << 3;result |= (PINE & 0x8) << 2;result |= (PINE & 0x30) >> 2;result |= (PING & 0x20) >> 1;RD_IDLE;}
+  #define setWriteDirInline() { DDRH |= 0x78;DDRE |= 0x38;DDRG |= 0x20; }
+  #define setReadDirInline()  { DDRH &= ~0x78;DDRE &= ~0x38;DDRG &= ~(0x20); }
+
  #else // Mega w/Breakout board
 
   #define write8inline(d)   { PORTA = (d); WR_STROBE; }
@@ -169,7 +211,7 @@
     result = PINA;              \
     RD_IDLE; }
   #define setWriteDirInline() DDRA  = 0xff
-  #define setReadDirInline()  DDRA  = 0
+  #define setReadDirInline() DDRA = 0
 
  #endif
 
@@ -279,7 +321,7 @@
    PIO_Clear(PIOB, (((~d) & 0x20)<<(27-5))); \
    WR_STROBE; }
 
-  #define read8inline(result) { \    
+  #define read8inline(result) { \
    RD_ACTIVE;   \
    delayMicroseconds(1);      \
    result = (((PIOC->PIO_PDSR & (1<<23)) >> (23-7)) | ((PIOC->PIO_PDSR & (1<<24)) >> (24-6)) | \
@@ -359,6 +401,17 @@
  // Control signals are ACTIVE LOW (idle is HIGH)
  // Command/Data: LOW = command, HIGH = data
  // These are single-instruction operations and always inline
+ #define RD_ACTIVE  RD_PORT &= ~RD_MASK
+ #define RD_IDLE    RD_PORT |=  RD_MASK
+ #define WR_ACTIVE  WR_PORT &= ~WR_MASK
+ #define WR_IDLE    WR_PORT |=  WR_MASK
+ #define CD_COMMAND CD_PORT &= ~CD_MASK
+ #define CD_DATA    CD_PORT |=  CD_MASK
+ #define CS_ACTIVE  CS_PORT &= ~CS_MASK
+ #define CS_IDLE    CS_PORT |=  CS_MASK
+
+#elif defined(USE_35_ILI9481_SHIELD)
+
  #define RD_ACTIVE  RD_PORT &= ~RD_MASK
  #define RD_IDLE    RD_PORT |=  RD_MASK
  #define WR_ACTIVE  WR_PORT &= ~WR_MASK

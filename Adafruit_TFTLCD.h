@@ -18,6 +18,7 @@
 // **** IF USING THE LCD SHIELD, LEAVE THE LINE ENABLED:             ****
 
 //#define USE_ADAFRUIT_SHIELD_PINOUT 1
+#define USE_35_ILI9481_SHIELD
 
 class Adafruit_TFTLCD : public Adafruit_GFX {
 
@@ -43,6 +44,7 @@ class Adafruit_TFTLCD : public Adafruit_GFX {
   uint16_t color565(uint8_t r, uint8_t g, uint8_t b),
            readPixel(int16_t x, int16_t y),
            readID(void);
+  uint16_t readID9481(void);
   uint32_t readReg(uint8_t r);
 
  private:
