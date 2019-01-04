@@ -58,7 +58,7 @@ void setup(void) {
   tft.reset();
 
   uint16_t identifier = tft.readID();
-
+identifier=0x9341;
   if(identifier == 0x9325) {
     Serial.println(F("Found ILI9325 LCD driver"));
   } else if(identifier == 0x9328) {
