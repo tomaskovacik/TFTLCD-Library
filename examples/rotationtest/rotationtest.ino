@@ -38,10 +38,13 @@
 #define YELLOW  0xFFE0
 #define WHITE   0xFFFF
 
-Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
+#ifdef USE_35_ILI9481_SHIELD | USE_ADAFRUIT_SHIELD_PINOUT
 // If using the shield, all control and data lines are fixed, and
 // a simpler declaration can optionally be used:
-// Adafruit_TFTLCD tft;
+Adafruit_TFTLCD tft;
+#else
+Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
+#endif
 
 void setup(void) {
   Serial.begin(9600);
@@ -49,15 +52,23 @@ void setup(void) {
 
 #ifdef USE_ADAFRUIT_SHIELD_PINOUT
   Serial.println(F("Using Adafruit 2.8\" TFT Arduino Shield Pinout"));
+#elif defined(USE_35_ILI9481_SHIELD)
+  Serial.println(F("3.5\" shield"));
 #else
   Serial.println(F("Using Adafruit 2.8\" TFT Breakout Board Pinout"));
 #endif
-
   tft.reset();
 
   uint16_t identifier = tft.readID();
 
-  if(identifier == 0x9325) {
+  //kovo: I do not know why, but value return from readID() stored in identifier did not work :/
+#ifdef USE_35_ILI9481_SHIELD
+  identifier = 0x9481;
+#endif
+
+  if (identifier == 0x9481) {
+    Serial.println(F("Found ILI9481B LCD driver"));
+  } else if(identifier == 0x9325) {
     Serial.println(F("Found ILI9325 LCD driver"));
   } else if(identifier == 0x9328) {
     Serial.println(F("Found ILI9328 LCD driver"));
@@ -220,4 +231,3 @@ void rotatePixel(void) {
     tft.setRotation(tft.getRotation()+1);
   }
 }
-
